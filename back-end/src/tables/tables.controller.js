@@ -13,8 +13,8 @@ async function validateData(request, response, next) {
 }
 
 //Check for required information
-async function validateBody(request, response, next) {
-  if (!request.body.data.table_name || request.body.data.table_name === "") {
+async function validatePostBody(request, response, next) {
+  if (!request.body.data.table_name) {
     return next({status:400, message: "'table_name' field cannot be empty"})
   }
 
@@ -33,8 +33,14 @@ async function validateBody(request, response, next) {
   if(request.body.data.capacity < 1) {
     return next({status: 400, message: "'capacity' field must be at least 1"})
   }
-  console.log(request.body)
   next()
+}
+
+async function validatePutBody(request, response, next) {
+    if(request.body.data.table_id === "occupied") {
+        return next({status:400, message: "'table_id' is occupied" })
+    }
+    next()
 }
 
 //Check for reservation Id
@@ -144,7 +150,7 @@ module.exports = {
   list: asyncErrorBoundary(list),
   create: [
     asyncErrorBoundary(validateData),
-    asyncErrorBoundary(validateBody),
+    asyncErrorBoundary(validatePostBody),
     asyncErrorBoundary(create),
   ],
   update: [
@@ -152,7 +158,7 @@ module.exports = {
     asyncErrorBoundary(validateTableId),
     asyncErrorBoundary(validateReservationId),
     asyncErrorBoundary(validateSeat),
-    asyncErrorBoundary(validateBody),
+    asyncErrorBoundary(validatePutBody),
     asyncErrorBoundary(update),
   ],
   destroy: [
